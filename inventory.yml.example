@@ -1,0 +1,11 @@
+# VMware vCenter Inventory Configuration
+# Copy this file to inventory.yml and update with your details
+
+all:
+  children:
+    vcenters:
+      hosts:
+        # Replace with your vCenter server FQDN or IP
+        your-vcenter.example.com:
+          # vCenter username (typically administrator@vsphere.local)
+          vcenter_username: administrator@vsphere.local

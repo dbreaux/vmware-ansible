@@ -1,0 +1,66 @@
+# VMware vSphere VM Automation with Ansible
+
+This project provides an interactive Ansible playbook to automate VM deployment from templates in VMware vSphere environments. The script features dynamic datastore selection, secure credential management with Ansible Vault, and user-friendly prompts.
+
+## Features
+
+- ✅ **Interactive VM Deployment** - User prompts for VM name and template selection
+- ✅ **Dynamic Datastore Selection** - Automatically selects datastore with most free space
+- ✅ **Secure Credential Management** - Passwords encrypted with Ansible Vault
+- ✅ **Template Support** - Works with both Windows and Linux templates
+- ✅ **Automatic Disk Inheritance** - Preserves original template disk configurations
+- ✅ **Production Ready** - Error handling and validation included
+
+## Prerequisites
+
+### Software Requirements
+- Ansible 2.9 or later
+- Python 3.6 or later
+- Access to VMware vCenter Server
+
+### Python Dependencies
+Install required Python libraries:
+```bash
+# For REST API support
+pip3 install aiohttp
+
+# For PyVmomi support (alternative/fallback method)
+pip3 install pyvmomi
+
+Ansible Collections
+
+Install required Ansible collections:
+
+	ansible-galaxy collection install vmware.vmware_rest
+	ansible-galaxy collection install community.vmware
+
+Quick Start
+
+1. Clone the Repository
+
+	git clone https://github.com/yourusername/vmware-ansible-automation.git
+	cd vmware-ansible-automation
+
+2. Configure Your Environment
+	# Copy example files
+	cp inventory.yml.example inventory.yml
+	cp group_vars/vcenters.yml.example group_vars/vcenters.yml
+
+	# Edit inventory with your vCenter details
+	vim inventory.yml
+
+	# Edit group variables with your environment details
+	vim group_vars/vcenters.yml
+
+3. Encrypt Your Passwords
+	# Encrypt the password file
+	ansible-vault encrypt group_vars/vcenters.yml
+
+4. Run the Playbook
+	# Deploy a new VM
+	ansible-playbook create_vm_from_template.yml --ask-vault-pass
+
+
+DETAILED WALKTHROUG
+
+For detailed walkthrough, see /docs/setup-guide.md 

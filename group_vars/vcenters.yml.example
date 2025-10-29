@@ -1,0 +1,14 @@
+# VMware vCenter Password Configuration
+# Copy this file to group_vars/vcenters.yml and update with your details
+# Then encrypt with: ansible-vault encrypt group_vars/vcenters.yml
+
+vcenter_passwords:
+  # Replace with your actual vCenter server and password
+  your-vcenter.example.com: your_vcenter_password_here
+
+
+# Optional: Additional vCenter configuration
+vcenter_settings:
+  validate_certs: false
+  connection_timeout: 30
+  default_datastore_threshold_gb: 10  # Minimum free space required

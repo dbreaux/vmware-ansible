@@ -1,0 +1,131 @@
+---
+- name: Create VM from Template with User Input and Auto Datastore Selection
+  hosts: vcenters
+  gather_facts: no
+  collections:
+    - community.vmware
+    - vmware.vmware_rest
+  vars:
+    # Update these variables to match your VMware environment
+    datacenter_name: "Your-Datacenter-Name"    # Replace with your datacenter name
+    cluster_name: "Your-Cluster-Name"          # Replace with your cluster name
+    
+  tasks:
+    - name: Get all VMs to show available templates
+      vmware.vmware_rest.vcenter_vm_info:
+        vcenter_hostname: "{{ inventory_hostname }}"
+        vcenter_username: "{{ vcenter_username }}"
+        vcenter_password: "{{ vcenter_passwords[inventory_hostname] }}"
+        vcenter_validate_certs: no
+      delegate_to: localhost
+      register: all_vms
+
+    - name: Display available VMs/Templates
+      debug:
+        msg: "Available VM/Template: {{ item.name }} (Power State: {{ item.power_state }})"
+      loop: "{{ all_vms.value }}"
+
+    - name: Get all datastores and select the best one
+      vmware.vmware_rest.vcenter_datastore_info:
+        vcenter_hostname: "{{ inventory_hostname }}"
+        vcenter_username: "{{ vcenter_username }}"
+        vcenter_password: "{{ vcenter_passwords[inventory_hostname] }}"
+        vcenter_validate_certs: no
+      delegate_to: localhost
+      register: all_datastores
+
+    - name: Display available datastores
+      debug:
+        msg: "Datastore: {{ item.name }} - Free: {{ (item.free_space / 1024 / 1024 / 1024) | round(1) }}GB of {{ (item.capacity / 1024 / 1024 / 1024) | round(1) }}GB ({{ ((item.free_space / item.capacity) * 100) | round(1) }}% free)"
+      loop: "{{ all_datastores.value }}"
+
+    - name: Select datastore with most free space
+      set_fact:
+        selected_datastore: "{{ all_datastores.value | sort(attribute='free_space', reverse=true) | first }}"
+
+    - name: Show selected datastore
+      debug:
+        msg: "Auto-selected datastore: {{ selected_datastore.name }} with {{ (selected_datastore.free_space / 1024 / 1024 / 1024) | round(1) }}GB free space"
+
+    - name: Get VM name from user
+      pause:
+        prompt: "Enter the name for the new VM"
+      register: vm_name_input
+
+    - name: Get template choice from user
+      pause:
+        prompt: "Enter the name of the template/VM to clone from (from the list above)"
+      register: template_name_input
+
+    - name: Set variables from user input
+      set_fact:
+        vm_name: "{{ vm_name_input.user_input }}"
+        source_vm_name: "{{ template_name_input.user_input }}"
+
+    - name: Validate template exists
+      set_fact:
+        template_found: true
+      loop: "{{ all_vms.value }}"
+      when: item.name == source_vm_name
+
+    - name: Fail if template not found
+      fail:
+        msg: "Template '{{ source_vm_name }}' not found! Please check the name and try again."
+      when: template_found is not defined
+
+    - name: Confirm choices with user
+      pause:
+        prompt: |
+          
+          You are about to create:
+          VM Name: {{ vm_name }}
+          From Template: {{ source_vm_name }}
+          Datacenter: {{ datacenter_name }}
+          Cluster: {{ cluster_name }}
+          Auto-Selected Datastore: {{ selected_datastore.name }} ({{ (selected_datastore.free_space / 1024 / 1024 / 1024) | round(1) }}GB free)
+          
+          Press ENTER to continue or Ctrl+C to abort
+      register: confirmation
+
+    - name: Clone VM from selected template
+      community.vmware.vmware_guest:
+        hostname: "{{ inventory_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_passwords[inventory_hostname] }}"
+        validate_certs: no
+        name: "{{ vm_name }}"
+        template: "{{ source_vm_name }}"
+        datacenter: "{{ datacenter_name }}"
+        cluster: "{{ cluster_name }}"
+        datastore: "{{ selected_datastore.name }}"
+        folder: "/{{ datacenter_name }}/vm"
+        state: poweredon
+        hardware:
+          memory_mb: 4096
+          num_cpus: 2
+        wait_for_ip_address: no
+      delegate_to: localhost
+      register: clone_result
+      ignore_errors: yes
+
+    - name: Display successful deployment
+      debug:
+        msg: |
+          VM Deployment Successful!
+          
+          VM Name: {{ vm_name }}
+          Cloned from: {{ source_vm_name }}
+          VM ID: {{ clone_result.instance.moid | default('Error getting ID') }}
+          Power State: {{ clone_result.instance.hw_power_status | default('Unknown') }}
+          Host: {{ clone_result.instance.hw_esxi_host | default('Unknown') }}
+          Datastore Used: {{ selected_datastore.name }}
+          Memory: {{ clone_result.instance.hw_memtotal_mb | default('Unknown') }}MB
+          CPUs: {{ clone_result.instance.hw_processor_count | default('Unknown') }}
+          
+          VM is ready for use!
+      when: clone_result.changed and not clone_result.failed
+
+    - name: Show error if deployment failed
+      debug:
+        var: clone_result
+      when: clone_result.failed | default(false)
