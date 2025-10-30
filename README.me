@@ -27,9 +27,7 @@ pip3 install aiohttp
 
 # For PyVmomi support (alternative/fallback method)
 pip3 install pyvmomi
-
 ```
-
 
 Ansible Collections
 
@@ -38,13 +36,12 @@ Install required Ansible collections:
 	ansible-galaxy collection install vmware.vmware_rest
 	ansible-galaxy collection install community.vmware
 
-
 Quick Start
 
 1. Clone the Repository
 
-	git clone https://github.com/dbreaux/vmware-ansible.git
-	cd vmware-ansible
+	git clone https://github.com/yourusername/vmware-ansible-automation.git
+	cd vmware-ansible-automation
 
 2. Configure Your Environment
 	# Copy example files
@@ -63,7 +60,7 @@ Quick Start
 
 4. Run the Playbook
 	# Deploy a new VM
-	ansible-playbook create_vm_from_powered_off_vm.yml --ask-vault-pass
+	ansible-playbook create_vm_from_template.yml --ask-vault-pass
 
 
 DETAILED WALKTHROUG
