@@ -42,8 +42,8 @@ ansible-galaxy collection install community.vmware
 Clone and Configure
 
 # Clone the repository
-git clone https://github.com/yourusername/vmware-ansible-automation.git
-cd vmware-ansible-automation
+git clone https://github.com/yourusername/vmware-ansible.git
+cd vmware-ansible
 
 # Copy configuration templates
 cp inventory.yml.example inventory.yml
