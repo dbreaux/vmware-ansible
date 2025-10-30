@@ -150,7 +150,7 @@ Permission Errors:
 
 Debug Mode
 # Run with maximum verbosity
-ansible-playbook create_vm_from_template.yml --ask-vault-pass -vvv
+ansible-playbook create_vm_from_powered_off_vm.yml --ask-vault-pass -vvv
 
 
 
