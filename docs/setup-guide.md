@@ -42,7 +42,7 @@ ansible-galaxy collection install community.vmware
 Clone and Configure
 
 # Clone the repository
-git clone https://github.com/yourusername/vmware-ansible.git
+git clone https://github.com/dbreaux/vmware-ansible.git
 cd vmware-ansible
 
 # Copy configuration templates
