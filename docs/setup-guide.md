@@ -109,7 +109,7 @@ EOF
 
 5. First VM Deployment
 # Run the main playbook
-ansible-playbook create_vm_from_template.yml --ask-vault-pass
+ansible-playbook create_vm_from_powered_off_vm.yml --ask-vault-pass
 
 # Follow the interactive prompts:
 # 1. Enter VM name
